@@ -33,37 +33,30 @@ const createBlog = async function (req, res) {
 const getBlog = async function (req, res) {
     try {
         if (req.query.category || req.query.authorId || req.query.tags || req.query.subcategory) {
-            if (req.validate._id == req.query.authorId) {
-                let obj = {};
-                if (req.query.category) {
-                    obj.category = req.query.category
-                }
-                if (req.query.authorId) {
-                    obj.authorId = req.query.authorId;
-                }
-                if (req.query.tags) {
-                    obj.tags = req.query.tags
-                }
-                if (req.query.subcategory) {
-                    obj.subcategory = req.query.subcategory
-                }
-                obj.isDeleted = false
-                obj.isPublished = true
-                let data = await blogModel.find(obj)
-                if (!data) {
-                    return res.status(404).send({ status: false, msg: "The given data is Invalid" });
-                } else {
-                    res.status(200).send({ status: true, message: "Successfully fetched all blogs", data: data })
-                }
-
-            } else {
-                res.status(400).send({ status: false, msg: "Not Authorized" })
+            let obj = {};
+            if (req.query.category) {
+                obj.category = req.query.category
             }
-
+            if (req.query.authorId) {
+                obj.authorId = req.query.authorId;
+            }
+            if (req.query.tags) {
+                obj.tags = req.query.tags
+            }
+            if (req.query.subcategory) {
+                obj.subcategory = req.query.subcategory
+            }
+            obj.isDeleted = false
+            obj.isPublished = true
+            let data = await blogModel.find(obj)
+            if (data==false) {
+                return res.status(404).send({ status: false, msg: "The given data is Invalid" });
+            } else {
+                res.status(200).send({ status: true, message: "Successfully fetched all blogs", data: data })
+            }
         } else {
             return res.status(404).send({ status: false, msg: "Mandatory body not given" });
         }
-
     } catch (err) {
         res.status(500).send({ status: false, message: "Something went wrong", Error: err });
     }
@@ -107,7 +100,7 @@ const deleteBlog = async function (req, res) {
         if (req.params.blogId) {
             if (req.validate._id == req.query.authorId) {
                 let data = await blogModel.find({ _id: id })
-                if (data.isdeleted == false) {
+                if (!data.isDeleted) {
                     let Update = {}
                     Update.isDeleted = await blogModel.findOneAndUpdate({ _id: id }, { isDeleted: true }, { new: true })
                     Update.deletedAt = await blogModel.findOneAndUpdate({ _id: id }, { deletedAt: Date() }, { new: true })
